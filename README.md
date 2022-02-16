@@ -14,6 +14,7 @@ This project is used by the following companies:
 
 * [Android Studio](https://developer.android.com/studio)
 * [Kotlin](https://kotlinlang.org/)
+* [MVVM]
 
 
 # Demo Link 
