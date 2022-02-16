@@ -14,7 +14,7 @@ This project is used by the following companies:
 
 * [Android Studio](https://developer.android.com/studio)
 * [Kotlin](https://kotlinlang.org/)
-* [MVVM]
+* [MVVM](https://www.geeksforgeeks.org/mvvm-model-view-viewmodel-architecture-pattern-in-android/)
 
 
 # Demo Link 
