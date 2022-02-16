@@ -14,19 +14,26 @@ import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.application.latticeinnovations.R
 import com.application.latticeinnovations.databinding.FragmentNewsMainBinding
-import com.application.latticeinnovations.extra.Status
 import com.application.latticeinnovations.model.remote.Article
+import com.application.latticeinnovations.view.adaptor.NewsPageAdapter
 import com.application.latticeinnovations.view.adaptor.NewsAdapter
 import com.application.latticeinnovations.viewModel.NewsViewModel
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
+/**
+ * Fragment class to load the result and do all the major operations where the user will be able to see
+ */
 @AndroidEntryPoint
 class NewsMainFragment : Fragment() {
 
     lateinit var newsMainBinding: FragmentNewsMainBinding
     private val newsViewModel: NewsViewModel by viewModels()
-    private var list = emptyList<Article>()
-    private val delay = 5000
+    private val delay = 1000
+    private var newsList = mutableListOf<Article>()
+    lateinit var newsPageAdapter: NewsPageAdapter
     private var runnable: Runnable? = null
 
     override fun onCreateView(
@@ -41,16 +48,38 @@ class NewsMainFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        loadApi()
+
+        newsPageAdapter = NewsPageAdapter()
+        setAdaptor()
+        loadPageData()
         searchload()
+
     }
 
+    /**
+     * Method to load the page once the app is Launch
+     */
+    private fun loadPageData() {
+        newsViewModel.getPageData().observe(this, {
+
+            it?.let { it ->
+                CoroutineScope(Dispatchers.Main).launch {
+                    newsPageAdapter.submitData(it)
+                }
+            }
+        })
+    }
+
+    /**
+     * Method to load the data once the user opt to search
+     */
     private fun searchload() {
         newsMainBinding.etToSearch.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
             }
 
             override fun onTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
+
             }
 
             override fun afterTextChanged(p0: Editable?) {
@@ -60,12 +89,12 @@ class NewsMainFragment : Fragment() {
                         kotlin.run {
                             loadSearchData(newsMainBinding.etToSearch.text.toString())
                         }
-                    }, 5000)
+                    }, 3000)
                 } else {
-                    loadApi()
+                    loadPageData()
                     val handler = Handler()
                     handler.postDelayed(Runnable {
-                        loadApi()
+                        loadPageData()
                         Toast.makeText(context, "Refreshed", Toast.LENGTH_SHORT).show()
                     }.also { runnable = it }, delay.toLong())
                 }
@@ -73,37 +102,33 @@ class NewsMainFragment : Fragment() {
         })
     }
 
+    /**
+     * Method to load the data once the user finished giving a keyword to search
+     */
     private fun loadSearchData(query: String) {
-        newsViewModel.getSearchData(query).observe(this, {
-            when (it.status) {
-                Status.SUCCESS -> {
-                    list = it.data!!.articles
-                    var adapter = NewsAdapter(list)
-                    var layoutManager = LinearLayoutManager(context)
-                    newsMainBinding.rvMainNews.adapter = adapter
-                    newsMainBinding.rvMainNews.layoutManager = layoutManager
-                }
-                Status.ERROR -> {
-                    Toast.makeText(context, "Error", Toast.LENGTH_SHORT).show()
-                }
+
+        newsViewModel.newsDB(query).observe(this, {
+            newsList.clear()
+            newsList.addAll(it)
+            newsList.reverse()
+            val adaptor = NewsAdapter(newsList)
+            val linearLayoutManager = LinearLayoutManager(context)
+            newsMainBinding.rvMainNews.apply {
+                adapter = adaptor
+                layoutManager = linearLayoutManager
             }
         })
     }
 
-    private fun loadApi() {
-        newsViewModel.getData().observe(this, {
-            when (it.status) {
-                Status.SUCCESS -> {
-                    list = it.data!!.articles
-                    var adapter = NewsAdapter(list)
-                    var layoutManager = LinearLayoutManager(context)
-                    newsMainBinding.rvMainNews.adapter = adapter
-                    newsMainBinding.rvMainNews.layoutManager = layoutManager
-                }
-                Status.ERROR -> {
-                    Toast.makeText(context, "Error", Toast.LENGTH_SHORT).show()
-                }
-            }
-        })
+    /**
+     * Setting adaptor class how the user can see
+     */
+    private fun setAdaptor() {
+        newsPageAdapter = NewsPageAdapter()
+        val linearLayoutManager = LinearLayoutManager(context)
+        newsMainBinding.rvMainNews.apply {
+            adapter = newsPageAdapter
+            layoutManager = linearLayoutManager
+        }
     }
 }

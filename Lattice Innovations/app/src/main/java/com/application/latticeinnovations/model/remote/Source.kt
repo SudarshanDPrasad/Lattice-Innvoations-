@@ -1,11 +1,15 @@
 package com.application.latticeinnovations.model.remote
 
-
+/**
+ * Response Class
+ */
+import androidx.room.ColumnInfo
+import androidx.room.Entity
+import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
 
+
 data class Source(
-    @SerializedName("id")
-    val id: Any,
     @SerializedName("name")
-    val name: String
+    val name: String,
 )

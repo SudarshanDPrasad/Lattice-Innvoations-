@@ -1,32 +1,33 @@
 package com.application.latticeinnovations.repository
 
-import com.application.latticeinnovations.di.NewsModule
-import com.application.latticeinnovations.extra.Resource
-import com.application.latticeinnovations.extra.ResponseHandler
-import com.application.latticeinnovations.model.remote.ResponseDTO
-import retrofit2.http.Query
-import java.lang.Exception
+import androidx.lifecycle.LiveData
+import androidx.paging.Pager
+import androidx.paging.PagingConfig
+import androidx.paging.liveData
+import com.application.latticeinnovations.model.local.NewsDao
+import com.application.latticeinnovations.model.local.ResultPagingSource
+import com.application.latticeinnovations.model.remote.ApiClient
+import com.application.latticeinnovations.model.remote.Article
 import javax.inject.Inject
 
-class NewsRepo @Inject constructor() {
 
-    val responseHandler = ResponseHandler()
+/**
+ * Repository class to load from the Paging source class which data Present in the Api class
+ */
+class NewsRepo @Inject constructor(val apiClient: ApiClient, val newsDao: NewsDao){
 
-    suspend fun getNews(): Resource<ResponseDTO> {
-        return try {
-            val data = NewsModule.ProvidesApiService().getData()
-            responseHandler.handleSuccess(data)
-        } catch (e: Exception) {
-            responseHandler.handleException(e)
-        }
-    }
+/**
+ * Pagination Method to set the list per page and max CardView to refresh
+ */
+fun getPageList() =
+    Pager(
+        config = PagingConfig(
+            pageSize = 20,
+        ),
+        pagingSourceFactory = { ResultPagingSource(newsDao) }
+    ).liveData
 
-    suspend fun getSearchData(query: String) : Resource<ResponseDTO>{
-        return try {
-            val data = NewsModule.ProvidesApiService().getSearchData("in",query)
-            responseHandler.handleSuccess(data)
-        }catch (e:Exception){
-            responseHandler.handleException(e)
-        }
+    fun getData(query:String): LiveData<List<Article>> {
+        return newsDao.getDb(query)
     }
 }

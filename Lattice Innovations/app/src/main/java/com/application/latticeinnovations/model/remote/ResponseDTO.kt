@@ -1,6 +1,8 @@
 package com.application.latticeinnovations.model.remote
 
-
+/**
+ * Response Class
+ */
 import com.google.gson.annotations.SerializedName
 
 data class ResponseDTO(

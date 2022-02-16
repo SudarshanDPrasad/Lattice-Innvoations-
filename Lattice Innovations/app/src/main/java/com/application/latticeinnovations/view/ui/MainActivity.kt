@@ -5,7 +5,9 @@ import android.os.Bundle
 import com.application.latticeinnovations.R
 import dagger.hilt.android.AndroidEntryPoint
 
-
+/**
+ * Main Activity to load the Fragment
+ */
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
