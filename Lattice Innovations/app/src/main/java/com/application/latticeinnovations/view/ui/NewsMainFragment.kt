@@ -49,6 +49,7 @@ class NewsMainFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+
         newsPageAdapter = NewsPageAdapter()
         setAdaptor()
         loadPageData()
@@ -60,6 +61,7 @@ class NewsMainFragment : Fragment() {
      * Method to load the page once the app is Launch
      */
     private fun loadPageData() {
+        newsViewModel.deleteAll()
         newsViewModel.getPageData().observe(this, {
 
             it?.let { it ->
@@ -83,20 +85,19 @@ class NewsMainFragment : Fragment() {
             }
 
             override fun afterTextChanged(p0: Editable?) {
-                if (p0 != null) {
-                    val handler = Handler()
-                    handler.postDelayed(Runnable {
-                        kotlin.run {
-                            loadSearchData(newsMainBinding.etToSearch.text.toString())
-                        }
-                    }, 3000)
+                if (!p0.toString().isEmpty()) {
+                    loadSearchData(newsMainBinding.etToSearch.text.toString())
                 } else {
-                    loadPageData()
-                    val handler = Handler()
-                    handler.postDelayed(Runnable {
-                        loadPageData()
-                        Toast.makeText(context, "Refreshed", Toast.LENGTH_SHORT).show()
-                    }.also { runnable = it }, delay.toLong())
+                    newsViewModel.getDbagain().observe(viewLifecycleOwner,{
+                        newsList.clear()
+                        newsList.addAll(it)
+                        val adaptor = NewsAdapter(newsList)
+                        val linearLayoutManager = LinearLayoutManager(context)
+                        newsMainBinding.rvMainNews.apply {
+                            adapter = adaptor
+                            layoutManager = linearLayoutManager
+                        }
+                    })
                 }
             }
         })
@@ -124,7 +125,6 @@ class NewsMainFragment : Fragment() {
      * Setting adaptor class how the user can see
      */
     private fun setAdaptor() {
-        newsPageAdapter = NewsPageAdapter()
         val linearLayoutManager = LinearLayoutManager(context)
         newsMainBinding.rvMainNews.apply {
             adapter = newsPageAdapter

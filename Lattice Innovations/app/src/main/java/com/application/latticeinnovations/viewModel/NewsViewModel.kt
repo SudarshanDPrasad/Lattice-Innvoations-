@@ -21,4 +21,12 @@ class NewsViewModel @Inject constructor(private val newsRepo: NewsRepo) : ViewMo
         return newsRepo.getData(query)
     }
 
+
+    fun getDbagain()  : LiveData<List<Article>>{
+        return newsRepo.getDataAll()
+    }
+
+    fun deleteAll(){
+        newsRepo.deleteAll()
+    }
 }

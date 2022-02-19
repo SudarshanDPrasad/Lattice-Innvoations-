@@ -15,7 +15,12 @@ interface NewsDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun addData(article: List<Article>)
 
-
     @Query("select * from article where source like :query")
     fun getDb(query:String) : LiveData<List<Article>>
+
+    @Query("select * from article")
+    fun getDbAgain() : LiveData<List<Article>>
+
+    @Query("DELETE FROM Article")
+    suspend fun deleteAll()
 }
